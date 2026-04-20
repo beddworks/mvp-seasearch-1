@@ -142,8 +142,8 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::post('/settings/exception-rules/{rule}/toggle',    [ExceptionRuleController::class, 'toggle'])->name('exception-rules.toggle');
         Route::delete('/settings/exception-rules/{rule}',         [ExceptionRuleController::class, 'destroy'])->name('exception-rules.destroy');
 
-        Route::get('/settings/timer-config',    [TimerConfigController::class, 'index'])->name('timer-config.index');
-        Route::put('/settings/timer-config',    [TimerConfigController::class, 'update'])->name('timer-config.update');
+        Route::get('/settings/timer-config',             [TimerConfigController::class, 'index'])->name('timer-config.index');
+        Route::put('/settings/timer-config/{mandate}',   [TimerConfigController::class, 'update'])->name('timer-config.update');
 
         // Report templates
         Route::get('/report-templates',                   [ReportTemplateController::class, 'index'])->name('report-templates.index');

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\AppNotification;
+use App\Models\CddSubmission;
+use App\Models\Mandate;
 use App\Models\MandateClaim;
 use App\Models\Recruiter;
 use App\Models\User;
@@ -100,11 +102,125 @@ class NotificationService
     private function notify(string $userId, string $type, string $message, array $data = []): void
     {
         AppNotification::create([
-            'user_id' => $userId,
-            'type'    => $type,
-            'message' => $message,
-            'data'    => $data,
+            'user_id'  => $userId,
+            'type'     => $type,
+            'title'    => $message,
+            'metadata' => $data,
         ]);
+    }
+
+    // ─── TIMER NOTIFICATIONS ─────────────────────────────────────────────
+
+    public function timerAReminderDay2(MandateClaim $claim): void
+    {
+        $this->notify(
+            $claim->recruiter->user_id,
+            'timer_a_warning',
+            "Deadline approaching: submit at least 1 profile for \"{$claim->mandate->title}\" by tomorrow.",
+            ['mandate_id' => $claim->mandate_id, 'claim_id' => $claim->id]
+        );
+    }
+
+    public function timerAFailed(MandateClaim $claim): void
+    {
+        $this->notify(
+            $claim->recruiter->user_id,
+            'timer_a_failed',
+            "Your assignment for \"{$claim->mandate->title}\" was auto-closed — no profile submitted within the deadline.",
+            ['mandate_id' => $claim->mandate_id, 'claim_id' => $claim->id]
+        );
+    }
+
+    public function roleDropped(Mandate $mandate): void
+    {
+        $this->notifyAdmins(
+            'role_dropped',
+            "Role \"{$mandate->title}\" has been dropped after 3 failed assignments.",
+            ['mandate_id' => $mandate->id]
+        );
+    }
+
+    public function roleReturnedToPool(Mandate $mandate, int $assignmentCount): void
+    {
+        $this->notifyAdmins(
+            'role_returned_to_pool',
+            "Role \"{$mandate->title}\" returned to pool (attempt {$assignmentCount}/3).",
+            ['mandate_id' => $mandate->id, 'assignment_count' => $assignmentCount]
+        );
+    }
+
+    public function timerBWarning(MandateClaim $claim, int $submittedCount): void
+    {
+        $this->notify(
+            $claim->recruiter->user_id,
+            'timer_b_warning',
+            "Timer B: Only {$submittedCount}/3 profiles submitted for \"{$claim->mandate->title}\". Deadline is tomorrow — late submission incurs a commission penalty.",
+            ['mandate_id' => $claim->mandate_id, 'claim_id' => $claim->id]
+        );
+    }
+
+    public function clientResponseReminder(CddSubmission $submission): void
+    {
+        $name = $submission->candidate->full_name ?? 'candidate';
+        $this->notifyAdmins(
+            'client_reminder',
+            "Client has not responded to \"{$name}\" submission for \"{$submission->mandate->title}\" (3 days pending).",
+            ['submission_id' => $submission->id, 'mandate_id' => $submission->mandate_id]
+        );
+    }
+
+    public function timerCSlaBreached(CddSubmission $submission, MandateClaim $claim): void
+    {
+        $this->notifyAdmins(
+            'timer_c_sla_breach',
+            "Timer C SLA breached: client has not responded to candidate submission for \"{$submission->mandate->title}\". Manual slot release may be needed.",
+            ['submission_id' => $submission->id, 'claim_id' => $claim->id, 'mandate_id' => $submission->mandate_id]
+        );
+    }
+
+    public function slotFreed(MandateClaim $claim): void
+    {
+        $this->notify(
+            $claim->recruiter->user_id,
+            'slot_freed',
+            "Your slot for \"{$claim->mandate->title}\" has been freed. You can now pick a new role.",
+            ['mandate_id' => $claim->mandate_id, 'claim_id' => $claim->id]
+        );
+    }
+
+    public function roleUnclaimed24h(Mandate $mandate): void
+    {
+        $this->notifyAdmins(
+            'role_unclaimed_24h',
+            "Role \"{$mandate->title}\" has been unclaimed for 24 hours.",
+            ['mandate_id' => $mandate->id]
+        );
+    }
+
+    public function roleUnclaimed48h(Mandate $mandate): void
+    {
+        $this->notifyAdmins(
+            'role_unclaimed_48h',
+            "Role \"{$mandate->title}\" has been unclaimed for 48 hours.",
+            ['mandate_id' => $mandate->id]
+        );
+    }
+
+    public function notifyEligibleRecruiters(Mandate $mandate): void
+    {
+        // Notify recruiters who have capacity (active_mandates_count < 2)
+        $eligible = Recruiter::where('active_mandates_count', '<', 2)
+            ->whereHas('user', fn($q) => $q->where('status', 'active'))
+            ->get();
+
+        foreach ($eligible as $recruiter) {
+            $this->notify(
+                $recruiter->user_id,
+                'new_role_available',
+                "New role available: \"{$mandate->title}\" — pick it before it's gone!",
+                ['mandate_id' => $mandate->id]
+            );
+        }
     }
 
     /** Stub — used by admin dashboard for latest activity feed */

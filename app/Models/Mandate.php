@@ -69,4 +69,18 @@ class Mandate extends Model
     {
         return $this->hasMany(CddSubmission::class);
     }
+
+    // ─── SCOPES ──────────────────────────────────────────────────────────
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeUnclaimed($query)
+    {
+        return $query->whereDoesntHave('claims', fn($q) =>
+            $q->whereIn('status', ['pending', 'approved'])
+        );
+    }
 }
