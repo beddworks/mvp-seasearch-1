@@ -12,6 +12,8 @@ use App\Models\MandateClaim;
 use App\Models\Recruiter;
 use App\Services\NotificationService;
 use App\Services\TimerService;
+use App\Models\CddSubmission;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -115,5 +117,21 @@ class MandateManagementController extends Controller
         app(NotificationService::class)->claimApproved($claim);
 
         return redirect()->back()->with('success', 'Role manually assigned.');
+    }
+
+    public function kanbanMove(Request $request): JsonResponse
+    {
+        $request->validate([
+            'submission_id' => 'required|uuid|exists:cdd_submissions,id',
+            'new_stage'     => 'required|in:pending,shortlisted,interview,offer_made,hired,rejected,on_hold',
+        ]);
+
+        $submission = CddSubmission::findOrFail($request->submission_id);
+        $submission->update([
+            'client_status'            => $request->new_stage,
+            'client_status_updated_at' => now(),
+        ]);
+
+        return response()->json(['success' => true, 'new_stage' => $request->new_stage]);
     }
 }

@@ -87,7 +87,7 @@ export default function MandateShow({ mandate, clients, compensationTypes, recru
             {/* Pipeline tab */}
             {tab === 'pipeline' && (
                 <div style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}>
-                    <PipelineBoard submissions={mandate.submissions ?? []} />
+                    <PipelineBoard submissions={mandate.submissions ?? []} moveUrl={route('admin.kanban.move')} />
                 </div>
             )}
 

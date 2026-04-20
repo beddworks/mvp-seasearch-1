@@ -47,10 +47,17 @@ export function fmtRelative(dateStr) {
 /** Return CSS variable string for a kanban stage */
 export function stageColor(stage) {
     const map = {
-        sourced:   'var(--mist4)',
-        screened:  'var(--amber2)',
-        interview: 'var(--sea2)',
-        offered:   'var(--violet2)',
+        // Recruiter kanban stages
+        sourced:    'var(--mist4)',
+        screened:   'var(--amber2)',
+        offered:    'var(--violet2)',
+        // Client-portal / shared stages
+        pending:    'var(--mist4)',
+        shortlisted:'var(--amber2)',
+        interview:  'var(--sea2)',
+        offer_made: 'var(--violet2)',
+        on_hold:    'var(--ink4)',
+        // Shared
         hired:     'var(--jade2)',
         rejected:  'var(--ruby2)',
     }

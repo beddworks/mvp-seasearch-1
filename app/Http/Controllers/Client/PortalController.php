@@ -136,6 +136,25 @@ class PortalController extends Controller
         return redirect()->back()->with('success', 'Candidate status updated.');
     }
 
+    public function kanbanMove(Request $request): JsonResponse
+    {
+        $request->validate([
+            'submission_id' => 'required|uuid|exists:cdd_submissions,id',
+            'new_stage'     => 'required|in:pending,shortlisted,interview,offer_made,hired,rejected,on_hold',
+        ]);
+
+        $client = auth()->user()->client;
+        $submission = CddSubmission::findOrFail($request->submission_id);
+        abort_unless($submission->mandate->client_id === $client->id, 403);
+
+        $submission->update([
+            'client_status'            => $request->new_stage,
+            'client_status_updated_at' => now(),
+        ]);
+
+        return response()->json(['success' => true, 'new_stage' => $request->new_stage]);
+    }
+
     public function sendMessage(Request $request): RedirectResponse
     {
         $request->validate([

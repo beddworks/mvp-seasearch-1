@@ -320,7 +320,7 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
                 <div style={{ fontSize: 12, color: 'var(--ink4)' }}>Track your candidates across hiring stages.</div>
             </div>
             <div style={{ flex: 1, overflow: 'hidden' }}>
-                <PipelineBoard submissions={submissions} />
+                <PipelineBoard submissions={submissions} moveUrl={route('client.kanban.move')} />
             </div>
         </div>
     )

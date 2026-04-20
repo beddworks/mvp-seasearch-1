@@ -157,6 +157,9 @@ Route::middleware(['auth', 'role:admin,super_admin'])
 
         // Analytics
         Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+
+        // Kanban stage move
+        Route::post('/kanban/move', [MandateManagementController::class, 'kanbanMove'])->name('kanban.move');
     });
 
 // ─── Tokenized Client Feedback (public — no auth) ────────────
@@ -170,6 +173,7 @@ Route::middleware(['auth', 'role:client'])->prefix('client')->name('client.')->g
     Route::post('/messages',                               [PortalController::class, 'sendMessage'])->name('messages.send');
     Route::post('/notifications/read-all',                 [PortalController::class, 'readAllNotifications'])->name('notifications.read-all');
     Route::post('/submissions/{submission}/update-status', [PortalController::class, 'updateStatus'])->name('submissions.update-status');
+    Route::post('/kanban/move', [PortalController::class, 'kanbanMove'])->name('kanban.move');
 });
 
 // ─── QA Test Login (DEV ONLY — remove before production) ─────
