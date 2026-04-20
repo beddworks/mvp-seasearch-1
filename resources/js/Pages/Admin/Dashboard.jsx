@@ -1,66 +1,114 @@
-import { usePage } from '@inertiajs/react'
-import FlashMessages from '@/Components/FlashMessages'
+import AdminLayout from '@/Layouts/AdminLayout'
+import { Link, router } from '@inertiajs/react'
+import { fmtCurrency, fmtDate } from '@/lib/utils'
 
-export default function AdminDashboard({ stats }) {
-    const { auth } = usePage().props
-
+export default function AdminDashboard({ stats, pendingClaims = [], pendingSubmissions = [], unclaimedRoles = [] }) {
     const statCards = [
-        { label: 'Recruiters',       value: stats.total_recruiters, accent: 'var(--sea3)' },
-        { label: 'Active mandates',  value: stats.active_mandates,  accent: 'var(--jade3)' },
-        { label: 'Total users',      value: stats.total_users,       accent: 'var(--violet2)' },
-        { label: 'Pending claims',   value: stats.pending_claims,    accent: 'var(--amber2)' },
+        { label: 'Active mandates',    value: stats.active_mandates,     accent: 'var(--sea3)' },
+        { label: 'Pending claims',     value: stats.pending_claims,       accent: 'var(--amber2)' },
+        { label: 'Pending CDD review', value: stats.pending_cdd_reviews,  accent: 'var(--violet2)' },
+        { label: 'Unclaimed 24h+',     value: stats.unclaimed_24h,        accent: 'var(--ruby2)' },
+        { label: 'Total recruiters',   value: stats.total_recruiters,     accent: 'var(--jade3)' },
+        { label: 'Active recruiters',  value: stats.active_recruiters,    accent: 'var(--jade2)' },
+        { label: 'Placements MTD',     value: stats.placements_mtd,       accent: 'var(--sea2)' },
+        { label: 'Revenue MTD',        value: fmtCurrency(stats.revenue_mtd ?? 0, 'SGD'), accent: 'var(--gold2)' },
     ]
 
     return (
-        <div style={{ minHeight: '100vh', fontFamily: 'var(--font)', background: 'var(--mist2)' }}>
-            {/* Topbar */}
-            <div className="topbar">
-                <div className="tb-logo-wrap">
-                    <span className="logo">Sea<span>Search</span></span>
+        <AdminLayout title="Dashboard">
+            <h1 style={{ fontFamily: 'var(--font-head)', fontSize: 20, fontWeight: 600, color: 'var(--ink)', marginBottom: 20 }}>
+                Platform overview
+            </h1>
+
+            {/* Stat grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 24 }}>
+                {statCards.map(c => (
+                    <div className="sm" key={c.label}>
+                        <div className="sm-bar" style={{ background: c.accent }} />
+                        <div className="sm-num">{c.value}</div>
+                        <div className="sm-lbl">{c.label}</div>
+                    </div>
+                ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                {/* Pending Claims */}
+                <div className="dcard">
+                    <div className="dcard-head">
+                        <span className="dcard-title">✋ Pending claims</span>
+                        <Link href={route('admin.claims.index')} className="dcard-ghost-btn">View all</Link>
+                    </div>
+                    {pendingClaims.length === 0
+                        ? <p style={{ padding: 16, fontSize: 12, color: 'var(--ink4)' }}>No pending claims.</p>
+                        : pendingClaims.map(c => (
+                            <div key={c.id} style={{ padding: '10px 16px', borderBottom: '1px solid var(--wire)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ fontSize: 12, fontWeight: 500 }}>{c.mandate?.title}</div>
+                                    <div style={{ fontSize: 11, color: 'var(--ink4)', marginTop: 2 }}>{c.recruiter?.user?.name} · {c.mandate?.client?.company_name}</div>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6 }}>
+                                    <button className="btn btn-success btn-sm" onClick={() => router.post(route('admin.claims.approve', c.id), {})}>Approve</button>
+                                    <button className="btn btn-danger btn-sm" onClick={() => {
+                                        const note = prompt('Rejection reason:')
+                                        if (note) router.post(route('admin.claims.reject', c.id), { note })
+                                    }}>Reject</button>
+                                </div>
+                            </div>
+                        ))
+                    }
                 </div>
-                <div style={{ flex: 1, paddingLeft: 20 }}>
-                    <span style={{ fontSize: 11, color: 'var(--ink3)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.1em' }}>
-                        Admin Panel
-                    </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 4 }}>
-                    <span style={{ fontSize: 12, color: 'var(--mist4)' }}>{auth.user?.name}</span>
-                    <a href={route('logout')}
-                        style={{ fontSize: 11, color: 'var(--ink4)', background: 'var(--ink2)', padding: '4px 10px', borderRadius: 'var(--rxs)', fontFamily: 'var(--mono)' }}
-                        onClick={e => { e.preventDefault(); document.getElementById('logout-form-admin').submit() }}>
-                        Sign out
-                    </a>
-                    <form id="logout-form-admin" method="POST" action={route('logout')} style={{ display: 'none' }}>
-                        <input type="hidden" name="_token" value={document.querySelector('meta[name=csrf-token]')?.content} />
-                    </form>
+
+                {/* Pending CDD */}
+                <div className="dcard">
+                    <div className="dcard-head">
+                        <span className="dcard-title">📄 Pending CDD review</span>
+                        <Link href={route('admin.submissions.index')} className="dcard-ghost-btn">View all</Link>
+                    </div>
+                    {pendingSubmissions.length === 0
+                        ? <p style={{ padding: 16, fontSize: 12, color: 'var(--ink4)' }}>No pending CDD submissions.</p>
+                        : pendingSubmissions.map(s => (
+                            <div key={s.id} style={{ padding: '10px 16px', borderBottom: '1px solid var(--wire)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ fontSize: 12, fontWeight: 500 }}>{s.candidate?.first_name} {s.candidate?.last_name}</div>
+                                    <div style={{ fontSize: 11, color: 'var(--ink4)', marginTop: 2 }}>{s.mandate?.title} · {s.recruiter?.user?.name}</div>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6 }}>
+                                    <button className="btn btn-success btn-sm" onClick={() => router.post(route('admin.submissions.approve', s.id), {})}>Approve</button>
+                                    <button className="btn btn-danger btn-sm" onClick={() => {
+                                        const note = prompt('Rejection reason:')
+                                        if (note) router.post(route('admin.submissions.reject', s.id), { note })
+                                    }}>Reject</button>
+                                </div>
+                            </div>
+                        ))
+                    }
                 </div>
             </div>
 
-            {/* Content */}
-            <div style={{ padding: 28 }}>
-                <h1 style={{ fontFamily: 'var(--font-head)', fontSize: 20, fontWeight: 600, color: 'var(--ink)', marginBottom: 20 }}>
-                    Platform overview
-                </h1>
-
-                {/* Stat cards */}
-                <div className="stat-row" style={{ marginBottom: 24 }}>
-                    {statCards.map(card => (
-                        <div className="sm" key={card.label}>
-                            <div className="sm-bar" style={{ background: card.accent }} />
-                            <div className="sm-num">{card.value}</div>
-                            <div className="sm-lbl">{card.label}</div>
-                        </div>
-                    ))}
+            {/* Unclaimed roles */}
+            {unclaimedRoles.length > 0 && (
+                <div className="dcard">
+                    <div className="dcard-head">
+                        <span className="dcard-title" style={{ color: 'var(--ruby2)' }}>⚠ Unclaimed roles (24h+)</span>
+                        <Link href={route('admin.mandates.index')} className="dcard-ghost-btn">Manage</Link>
+                    </div>
+                    <div className="table-wrap" style={{ border: 'none', borderRadius: 0 }}>
+                        <table>
+                            <thead><tr><th>Role</th><th>Client</th><th>Posted</th><th></th></tr></thead>
+                            <tbody>
+                                {unclaimedRoles.map(m => (
+                                    <tr key={m.id}>
+                                        <td style={{ fontWeight: 500 }}>{m.title}</td>
+                                        <td>{m.client?.company_name}</td>
+                                        <td>{fmtDate(m.original_post_date)}</td>
+                                        <td><Link href={route('admin.mandates.show', m.id)} className="btn btn-ghost btn-sm">View</Link></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-
-                <div className="dcard" style={{ padding: 24 }}>
-                    <p style={{ color: 'var(--ink4)', fontSize: 13 }}>
-                        Full admin panel (mandate CRUD, client management, recruiter management) will be built in Phase 3.
-                    </p>
-                </div>
-            </div>
-
-            <FlashMessages />
-        </div>
+            )}
+        </AdminLayout>
     )
 }
