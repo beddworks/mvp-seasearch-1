@@ -7,7 +7,6 @@ use App\Models\ExceptionRule;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
@@ -84,5 +83,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('✓ Admin user: admin@seasearch.asia / password');
         $this->command->info('✓ 4 compensation types seeded.');
         $this->command->info('✓ Exception rule (trusted bypass) seeded.');
+
+        $this->call(ComprehensiveSeeder::class);
     }
 }
