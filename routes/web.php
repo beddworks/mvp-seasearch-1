@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\TimerConfigController;
 use App\Http\Controllers\Auth\GoogleSsoController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ProfileController;
+use App\Http\Controllers\Client\PortalController;
 use App\Http\Controllers\Client\SubmissionFeedbackController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -162,3 +163,11 @@ Route::middleware(['auth', 'role:admin,super_admin'])
 Route::get('/feedback/confirmed', fn () => Inertia::render('Client/Feedback/Confirmed'))->name('feedback.confirmed');
 Route::get('/feedback/{token}',   [SubmissionFeedbackController::class, 'show'])->name('feedback.show');
 Route::post('/feedback/{token}',  [SubmissionFeedbackController::class, 'update'])->name('feedback.update');
+
+// ─── Client Portal (auth required — role:client) ─────────────
+Route::middleware(['auth', 'role:client'])->prefix('client')->name('client.')->group(function () {
+    Route::get('/portal',                                  [PortalController::class, 'index'])->name('portal.index');
+    Route::post('/messages',                               [PortalController::class, 'sendMessage'])->name('messages.send');
+    Route::post('/notifications/read-all',                 [PortalController::class, 'readAllNotifications'])->name('notifications.read-all');
+    Route::post('/submissions/{submission}/update-status', [PortalController::class, 'updateStatus'])->name('submissions.update-status');
+});
