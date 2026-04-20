@@ -20,6 +20,7 @@ class CddSubmission extends Model
         'interview_feedback_stars', 'interview_verdict',
         'token', 'token_created_at', 'token_used_at', 'token_action',
         'gsheet_row_index', 'penalty_applied', 'days_late',
+        'client_feedback', 'client_feedback_sentiment',
     ];
 
     protected $casts = [

@@ -76,6 +76,15 @@ Route::middleware(['auth', 'role:recruiter', 'profile'])
         Route::post('/ai/draft-outreach/{candidate}',       [\App\Http\Controllers\Recruiter\AiController::class, 'draftOutreach'])->name('ai.outreach');
         Route::post('/ai/interview-questions/{submission}', [\App\Http\Controllers\Recruiter\AiController::class, 'interviewQuestions'])->name('ai.questions');
         Route::post('/ai/run-matching/{mandate}',           [\App\Http\Controllers\Recruiter\AiController::class, 'runMatching'])->name('ai.matching');
+
+        // Kanban
+        Route::get('/kanban/{mandate}',                [\App\Http\Controllers\Recruiter\KanbanController::class, 'show'])->name('kanban.show');
+        Route::post('/kanban/move',                    [\App\Http\Controllers\Recruiter\KanbanController::class, 'move'])->name('kanban.move');
+        Route::post('/kanban/schedule-interview',      [\App\Http\Controllers\Recruiter\KanbanController::class, 'scheduleInterview'])->name('kanban.schedule-interview');
+        Route::post('/kanban/save-client-feedback',    [\App\Http\Controllers\Recruiter\KanbanController::class, 'saveClientFeedback'])->name('kanban.save-client-feedback');
+        Route::post('/kanban/submit-to-client',        [\App\Http\Controllers\Recruiter\KanbanController::class, 'submitToClient'])->name('kanban.submit-to-client');
+        Route::post('/kanban/reject',                  [\App\Http\Controllers\Recruiter\KanbanController::class, 'reject'])->name('kanban.reject');
+        Route::post('/kanban/add-candidate',           [\App\Http\Controllers\Recruiter\KanbanController::class, 'addCandidate'])->name('kanban.add-candidate');
     });
 
 // ─── Admin ───────────────────────────────────────────────────
