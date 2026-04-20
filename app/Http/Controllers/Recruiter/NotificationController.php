@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Recruiter;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppNotification;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -10,21 +12,35 @@ class NotificationController extends Controller
 {
     public function index(): Response
     {
-        $recruiter = auth()->user()->recruiter->load('user');
+        $user = auth()->user();
 
         return Inertia::render('Recruiter/Notifications/Index', [
-            'recruiter'     => $recruiter,
-            'notifications' => [],
+            'notifications' => AppNotification::where('user_id', $user->id)
+                ->latest()
+                ->paginate(30),
+            'unread_count' => AppNotification::where('user_id', $user->id)
+                ->where('is_read', false)
+                ->count(),
         ]);
     }
 
-    public function read(string $id)
+    public function read(string $id): JsonResponse
     {
-        return redirect()->back();
+        $notif = AppNotification::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $notif->update(['is_read' => true, 'read_at' => now()]);
+
+        return response()->json(['success' => true]);
     }
 
-    public function readAll()
+    public function readAll(): JsonResponse
     {
-        return redirect()->back()->with('success', 'All notifications marked as read.');
+        AppNotification::where('user_id', auth()->id())
+            ->where('is_read', false)
+            ->update(['is_read' => true, 'read_at' => now()]);
+
+        return response()->json(['success' => true]);
     }
 }

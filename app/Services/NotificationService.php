@@ -258,7 +258,64 @@ class NotificationService
         );
     }
 
-    /** Stub \u2014 used by admin dashboard for latest activity feed */
+    public function payoutProcessed(Placement $placement): void
+    {
+        $formatted = number_format((float) $placement->final_payout, 0);
+        $currency  = $placement->currency ?? 'SGD';
+        $this->notify(
+            $placement->recruiter->user_id,
+            'payout_processed',
+            "{$currency} {$formatted} has been transferred to your bank account.",
+            ['placement_id' => $placement->id]
+        );
+    }
+
+    public function newClaimPending(MandateClaim $claim): void
+    {
+        $this->notifyAdmins(
+            'claim_pending',
+            "{$claim->recruiter->user->name} has claimed \"{$claim->mandate->title}\" and is awaiting approval.",
+            ['claim_id' => $claim->id, 'mandate_id' => $claim->mandate_id]
+        );
+    }
+
+    public function cddPendingAdminReview(CddSubmission $sub): void
+    {
+        $name = $sub->candidate->first_name . ' ' . $sub->candidate->last_name;
+        $this->notifyAdmins(
+            'cdd_pending',
+            "{$sub->recruiter->user->name} submitted {$name} for \"{$sub->mandate->title}\" — awaiting review.",
+            ['submission_id' => $sub->id]
+        );
+    }
+
+    public function cddSlotBurned(CddSubmission $sub): void
+    {
+        $name = $sub->candidate->first_name . ' ' . $sub->candidate->last_name;
+        $this->notify(
+            $sub->recruiter->user_id,
+            'cdd_slot_burned',
+            "{$name} has been rejected twice for \"{$sub->mandate->title}\". Please source and submit a new candidate.",
+            ['submission_id' => $sub->id, 'mandate_id' => $sub->mandate_id]
+        );
+    }
+
+    public function roleUnclaimed72h(Mandate $mandate): void
+    {
+        $this->notifyAdmins(
+            'role_unclaimed_72h',
+            "Role \"{$mandate->title}\" auto-paused after 72 hours without a recruiter. Manual intervention required.",
+            ['mandate_id' => $mandate->id]
+        );
+    }
+
+    public function sendDailyDigest(User $user, array $digest): void
+    {
+        \Illuminate\Support\Facades\Mail::to($user->email)
+            ->queue(new \App\Mail\AdminDailyDigestMail($user, $digest));
+    }
+
+    /** Used by admin activity feed */
     public static function admins(): \Illuminate\Database\Eloquent\Builder
     {
         return AppNotification::whereHas('user', fn($q) =>

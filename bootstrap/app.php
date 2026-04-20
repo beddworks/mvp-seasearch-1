@@ -27,4 +27,5 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->job(new TimerCheckJob())->hourly()->withoutOverlapping();
+        $schedule->command('seasearch:daily-digest')->dailyAt('09:00')->withoutOverlapping();
     })->create();
