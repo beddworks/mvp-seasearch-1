@@ -171,3 +171,23 @@ Route::middleware(['auth', 'role:client'])->prefix('client')->name('client.')->g
     Route::post('/notifications/read-all',                 [PortalController::class, 'readAllNotifications'])->name('notifications.read-all');
     Route::post('/submissions/{submission}/update-status', [PortalController::class, 'updateStatus'])->name('submissions.update-status');
 });
+
+// ─── QA Test Login (DEV ONLY — remove before production) ─────
+if (app()->environment('local')) {
+    Route::get('/qa-login/{userId}', function (string $userId) {
+        auth()->logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        $user = \App\Models\User::findOrFail($userId);
+        auth()->login($user);
+        request()->session()->regenerate();
+        $role = $user->role;
+        if (in_array($role, ['admin', 'super_admin'])) {
+            return redirect('/admin/dashboard');
+        }
+        if ($role === 'client') {
+            return redirect('/client/portal');
+        }
+        return redirect('/recruiter/dashboard');
+    });
+}

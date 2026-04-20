@@ -58,6 +58,11 @@ class CddSubmission extends Model
         return $this->hasOne(Placement::class);
     }
 
+    public function scopePendingAdminReview($query)
+    {
+        return $query->where('admin_review_status', 'pending');
+    }
+
     public function adminReviewer()
     {
         return $this->belongsTo(User::class, 'admin_reviewed_by');

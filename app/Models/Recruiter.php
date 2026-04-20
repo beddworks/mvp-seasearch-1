@@ -49,4 +49,21 @@ class Recruiter extends Model
     {
         return $this->hasMany(Placement::class);
     }
+
+    // Alias for mandateClaims (used in withCount)
+    public function claims()
+    {
+        return $this->hasMany(MandateClaim::class);
+    }
+
+    // Alias for cddSubmissions (used in withCount)
+    public function submissions()
+    {
+        return $this->hasMany(CddSubmission::class);
+    }
+
+    public function activeClaims()
+    {
+        return $this->hasMany(MandateClaim::class)->where('status', 'approved');
+    }
 }

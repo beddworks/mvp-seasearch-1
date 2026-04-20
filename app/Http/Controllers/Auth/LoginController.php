@@ -27,8 +27,6 @@ class LoginController extends Controller
             return back()->withErrors(['email' => 'These credentials do not match our records.']);
         }
 
-        $request->session()->regenerate();
-
         $user = Auth::user();
 
         // Only admins may use email/password login
@@ -36,6 +34,8 @@ class LoginController extends Controller
             Auth::logout();
             return back()->withErrors(['email' => 'Please use Google Sign-In to access your account.']);
         }
+
+        $request->session()->regenerate();
 
         return redirect()->route('admin.dashboard');
     }

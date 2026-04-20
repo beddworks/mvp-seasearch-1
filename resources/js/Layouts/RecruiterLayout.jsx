@@ -14,7 +14,7 @@ export default function RecruiterLayout({ title, children }) {
     const recruiter = auth?.recruiter
 
     function SideNavItem({ label, href, icon }) {
-        const active = route().current(href) || route().current(href.replace('.index', '.*'))?.()
+        const active = route().current(href) || route().current(href.replace('.index', '.*'))
         return (
             <Link href={route(href)} className={`sbi${route().current()?.startsWith(href.split('.').slice(0, 2).join('.')) ? ' on' : ''}`}>
                 <span className="sbi-ico">{icon}</span>

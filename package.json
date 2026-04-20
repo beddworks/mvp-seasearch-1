@@ -20,6 +20,7 @@
         "@dnd-kit/utilities": "^3.2.2",
         "@inertiajs/react": "^3.0.3",
         "react": "^19.2.5",
-        "react-dom": "^19.2.5"
+        "react-dom": "^19.2.5",
+        "ziggy-js": "^2.6.2"
     }
 }
