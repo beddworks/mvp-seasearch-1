@@ -74,6 +74,10 @@ export default function MandateWorkspace({ mandate, claim, submissions: initialS
                 <div>
                     <div style={{ fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 700, color: '#fff' }}>{mandate.title}</div>
                     <div style={{ fontSize: 12, color: 'var(--mist4)', marginTop: 4 }}>{mandate.client?.company_name}</div>
+                    <Link href={route('recruiter.kanban.show', mandate.id)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 10, fontSize: 11, fontWeight: 500, color: 'var(--sea3)', fontFamily: 'var(--mono)', textDecoration: 'none' }}>
+                        ⬛ Open pipeline board →
+                    </Link>
                 </div>
                 {/* Timer A status */}
                 <div style={{ textAlign: 'right' }}>

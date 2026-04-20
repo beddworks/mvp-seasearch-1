@@ -69,6 +69,9 @@ export default function RecruiterDashboard({ recruiter, stats, activeMandates = 
                                             <div style={{ fontSize: 12, fontWeight: 600 }}>{claim.mandate?.title}</div>
                                             <div style={{ fontSize: 11, color: 'var(--ink4)', marginTop: 2 }}>{claim.mandate?.client?.company_name}</div>
                                         </div>
+                                        <Link href={route('recruiter.kanban.show', claim.mandate?.id)} className="btn btn-ghost btn-sm" style={{ color: 'var(--sea2)' }}>
+                                            Pipeline →
+                                        </Link>
                                         <Link href={route('recruiter.mandates.workspace', claim.mandate?.id)} className="btn btn-ghost btn-sm">
                                             Workspace →
                                         </Link>
