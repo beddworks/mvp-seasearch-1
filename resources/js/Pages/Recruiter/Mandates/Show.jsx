@@ -43,7 +43,7 @@ export default function MandateShow({ mandate, existingClaim, canPick }) {
                             {mandate.description && (
                                 <div style={{ marginBottom: 20 }}>
                                     <div style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Description</div>
-                                    <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--ink)', whiteSpace: 'pre-line' }}>{mandate.description}</p>
+                                    <div style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--ink)' }} dangerouslySetInnerHTML={{ __html: mandate.description }} />
                                 </div>
                             )}
                             {flagSection('Must-haves', mandate.must_haves, 'var(--jade3)')}
@@ -58,7 +58,10 @@ export default function MandateShow({ mandate, existingClaim, canPick }) {
                             <div className="dcard-head"><span className="dcard-title">Screening questions</span></div>
                             <ol style={{ padding: '10px 20px 14px 30px', margin: 0 }}>
                                 {mandate.screening_questions.map((q, i) => (
-                                    <li key={i} style={{ fontSize: 13, marginBottom: 8, color: 'var(--ink)' }}>{q}</li>
+                                    <li key={i} style={{ fontSize: 13, marginBottom: 8, color: 'var(--ink)' }}>
+                                        {typeof q === 'object' ? q.question : q}
+                                        {q.required && <span style={{ fontSize: 11, color: 'var(--ruby2)', marginLeft: 6 }}>required</span>}
+                                    </li>
                                 ))}
                             </ol>
                         </div>

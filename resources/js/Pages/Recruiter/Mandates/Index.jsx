@@ -131,9 +131,8 @@ export default function MandatesIndex({ mandates, myClaimedIds = [], industries 
                                     </div>
 
                                     {m.description && (
-                                        <p style={{ fontSize: 12, color: 'var(--ink4)', marginTop: 8, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                                            {m.description}
-                                        </p>
+                                        <div style={{ fontSize: 12, color: 'var(--ink4)', marginTop: 8, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+                                            dangerouslySetInnerHTML={{ __html: m.description }} />
                                     )}
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
