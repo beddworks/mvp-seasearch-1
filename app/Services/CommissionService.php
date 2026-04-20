@@ -3,51 +3,105 @@
 namespace App\Services;
 
 use App\Models\CddSubmission;
+use App\Models\MandateClaim;
 use App\Models\Placement;
+use Illuminate\Support\Facades\DB;
 
 class CommissionService
 {
-    private const PLATFORM_FEE_DEFAULT = 20.0; // 20% if compensationType not set
+    public function __construct(
+        private TimerService $timerService,
+        private NotificationService $notif
+    ) {}
+
+    private const PLATFORM_FEE_DEFAULT = 0.20; // 20% as a decimal fraction
+
+    /**
+     * Calculate commission breakdown WITHOUT persisting — used for previews.
+     */
+    public function calculate(CddSubmission $submission): array
+    {
+        $submission->loadMissing(['mandate.compensationType', 'mandate.client', 'recruiter']);
+        $mandate   = $submission->mandate;
+        $recruiter = $submission->recruiter;
+        $compType  = $mandate->compensationType;
+
+        // 1. Gross reward
+        $grossReward = $this->computeGrossReward($submission, $compType);
+
+        // 2. Platform fee (fraction, e.g. 0.20)
+        $platformFeePct = $compType ? (float) $compType->platform_fee_pct : self::PLATFORM_FEE_DEFAULT;
+        $platformFee    = $grossReward * $platformFeePct;
+        $netPayout      = $grossReward - $platformFee;
+
+        // 3. Tier modifier
+        $tierModifier = match ($recruiter->tier) {
+            'senior' => 0.05,
+            'elite'  => 0.10,
+            default  => 0.00,
+        };
+        $netPayout = $netPayout * (1 + $tierModifier);
+
+        // 4. Timer B penalty
+        $claim      = MandateClaim::where('mandate_id', $mandate->id)
+                        ->where('recruiter_id', $recruiter->id)
+                        ->where('status', 'approved')
+                        ->first();
+        $penaltyPct = $claim ? $this->timerService->calculatePenalty($claim) : 0.0;
+        $penaltyAmt = $netPayout * $penaltyPct;
+        $finalPayout = max(0, $netPayout - $penaltyAmt);
+
+        return [
+            'gross_reward'   => round($grossReward, 2),
+            'platform_fee'   => round($platformFee, 2),
+            'net_payout'     => round($netPayout, 2),
+            'penalty_pct'    => $penaltyPct,
+            'penalty_amount' => round($penaltyAmt, 2),
+            'final_payout'   => round($finalPayout, 2),
+            'currency'       => $mandate->salary_currency ?? 'SGD',
+            'tier_modifier'  => $tierModifier,
+        ];
+    }
 
     /**
      * Settle commission when a candidate is marked as hired.
-     * Creates a Placement record with computed fee breakdown.
+     * Calls calculate() then persists the Placement record.
      */
     public function settle(CddSubmission $submission): Placement
     {
-        $submission->loadMissing(['mandate.compensationType', 'mandate.client', 'recruiter']);
+        $financials = $this->calculate($submission);
+        $mandate    = $submission->mandate;
+        $recruiter  = $submission->recruiter;
 
-        $mandate          = $submission->mandate;
-        $compensationType = $mandate->compensationType;
+        return DB::transaction(function () use ($submission, $financials, $mandate, $recruiter) {
+            $placement = Placement::create([
+                'cdd_submission_id' => $submission->id,
+                'mandate_id'        => $mandate->id,
+                'recruiter_id'      => $recruiter->id,
+                'client_id'         => $mandate->client_id,
+                'gross_reward'      => $financials['gross_reward'],
+                'platform_fee'      => $financials['platform_fee'],
+                'net_payout'        => $financials['net_payout'],
+                'penalty_amount'    => $financials['penalty_amount'],
+                'final_payout'      => $financials['final_payout'],
+                'currency'          => $financials['currency'],
+                'payout_status'     => 'pending',
+                'placed_at'         => now(),
+            ]);
 
-        // Compute gross reward based on formula type
-        $grossReward = $this->computeGrossReward($submission, $compensationType);
+            // Update mandate
+            $mandate->update(['status' => 'filled']);
 
-        // Platform fee percentage (from compensation type or default 20%)
-        $platformFeePct  = $compensationType?->platform_fee_pct ?? self::PLATFORM_FEE_DEFAULT;
-        $platformFee     = $grossReward * ($platformFeePct / 100);
-        $netPayout       = $grossReward - $platformFee;
+            // Update recruiter stats
+            $recruiter->decrement('active_mandates_count');
+            $recruiter->increment('total_placements');
+            $recruiter->increment('total_earnings', $financials['final_payout']);
 
-        // Penalty (if timer penalty was applied to this submission)
-        $penaltyAmount   = $submission->penalty_applied ? ($submission->days_late ? $this->computePenalty($netPayout, $submission->days_late) : 0) : 0;
-        $finalPayout     = max(0, $netPayout - $penaltyAmount);
+            // Notify recruiter
+            $this->notif->placementConfirmed($placement);
 
-        $placement = Placement::create([
-            'cdd_submission_id'  => $submission->id,
-            'mandate_id'         => $mandate->id,
-            'recruiter_id'       => $submission->recruiter_id,
-            'client_id'          => $mandate->client_id,
-            'gross_reward'       => round($grossReward, 2),
-            'platform_fee'       => round($platformFee, 2),
-            'net_payout'         => round($netPayout, 2),
-            'penalty_amount'     => round($penaltyAmount, 2),
-            'final_payout'       => round($finalPayout, 2),
-            'currency'           => 'SGD',
-            'payout_status'      => 'pending',
-            'placed_at'          => now(),
-        ]);
-
-        return $placement;
+            return $placement;
+        });
     }
 
     // ── Private helpers ──────────────────────────────────────────────────
@@ -92,16 +146,5 @@ class CommissionService
         $hours = (float) ($fields['hours_per_week']  ?? 40);
         $weeks = (float) ($fields['engagement_weeks'] ?? 52);
         return $rate * $hours * $weeks;
-    }
-
-    private function computePenalty(float $netPayout, int $daysLate): float
-    {
-        $pct = match (true) {
-            $daysLate >= 8 => 30,
-            $daysLate >= 7 => 20,
-            $daysLate >= 6 => 10,
-            default        => 0,
-        };
-        return $netPayout * ($pct / 100);
     }
 }

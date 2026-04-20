@@ -6,6 +6,7 @@ use App\Models\AppNotification;
 use App\Models\CddSubmission;
 use App\Models\Mandate;
 use App\Models\MandateClaim;
+use App\Models\Placement;
 use App\Models\Recruiter;
 use App\Models\User;
 
@@ -223,7 +224,41 @@ class NotificationService
         }
     }
 
-    /** Stub — used by admin dashboard for latest activity feed */
+    public function placementConfirmed(Placement $placement): void
+    {
+        $currency    = $placement->currency ?? 'SGD';
+        $finalPayout = number_format((float) $placement->final_payout, 0);
+        $title       = $placement->mandate->title ?? 'a role';
+        $this->notify(
+            $placement->recruiter->user_id,
+            'placement_confirmed',
+            "Placement confirmed for \"{$title}\" \u2014 {$currency} {$finalPayout} added to your balance.",
+            ['placement_id' => $placement->id, 'mandate_id' => $placement->mandate_id]
+        );
+        $this->notifyAdmins(
+            'placement_confirmed',
+            "New placement: \"{$title}\" \u2014 {$currency} {$finalPayout} commission.",
+            ['placement_id' => $placement->id]
+        );
+    }
+
+    public function payoutRequested(Recruiter $recruiter, float $amount): void
+    {
+        $formatted = number_format($amount, 0);
+        $this->notify(
+            $recruiter->user_id,
+            'payout_requested',
+            "Payout request of SGD {$formatted} submitted. Processing in 2\u20133 business days.",
+            ['recruiter_id' => $recruiter->id, 'amount' => $amount]
+        );
+        $this->notifyAdmins(
+            'payout_requested',
+            "Recruiter {$recruiter->user->name} requested a payout of SGD {$formatted}.",
+            ['recruiter_id' => $recruiter->id, 'amount' => $amount]
+        );
+    }
+
+    /** Stub \u2014 used by admin dashboard for latest activity feed */
     public static function admins(): \Illuminate\Database\Eloquent\Builder
     {
         return AppNotification::whereHas('user', fn($q) =>

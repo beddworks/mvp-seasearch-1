@@ -35,4 +35,10 @@ class MandateClaim extends Model
     {
         return $this->belongsTo(User::class, 'reviewed_by');
     }
+
+    public function timerBDeadlineAt(): ?\Carbon\Carbon
+    {
+        if (!$this->assigned_at || !$this->mandate->timer_b_active) return null;
+        return $this->assigned_at->addDays($this->mandate->timer_b_days)->endOfDay();
+    }
 }

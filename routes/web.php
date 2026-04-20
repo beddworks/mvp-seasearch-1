@@ -65,6 +65,7 @@ Route::middleware(['auth', 'role:recruiter', 'profile'])
 
         // Earnings
         Route::get('/earnings', [\App\Http\Controllers\Recruiter\EarningsController::class, 'index'])->name('earnings.index');
+        Route::post('/earnings/payout-request', [\App\Http\Controllers\Recruiter\EarningsController::class, 'requestPayout'])->name('earnings.payout-request');
 
         // Notifications
         Route::get('/notifications', [\App\Http\Controllers\Recruiter\NotificationController::class, 'index'])->name('notifications.index');
