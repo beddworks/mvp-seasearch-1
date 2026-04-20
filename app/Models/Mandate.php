@@ -65,6 +65,14 @@ class Mandate extends Model
         return $this->hasOne(MandateClaim::class)->where('status', 'approved');
     }
 
+    /**
+     * Alias for approvedClaim — used throughout controllers.
+     */
+    public function activeClaim()
+    {
+        return $this->hasOne(MandateClaim::class)->where('status', 'approved');
+    }
+
     public function submissions()
     {
         return $this->hasMany(CddSubmission::class);

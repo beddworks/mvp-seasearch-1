@@ -28,6 +28,14 @@ class Placement extends Model
         return $this->belongsTo(CddSubmission::class, 'cdd_submission_id');
     }
 
+    /**
+     * Alias for submission() — used in EarningsController.
+     */
+    public function cddSubmission()
+    {
+        return $this->belongsTo(CddSubmission::class, 'cdd_submission_id');
+    }
+
     public function mandate()
     {
         return $this->belongsTo(Mandate::class);

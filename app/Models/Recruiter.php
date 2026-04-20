@@ -66,4 +66,14 @@ class Recruiter extends Model
     {
         return $this->hasMany(MandateClaim::class)->where('status', 'approved');
     }
+
+    public function scopeWithCapacity($query)
+    {
+        return $query->where('active_mandates_count', '<', 2);
+    }
+
+    public function hasCapacity(): bool
+    {
+        return $this->active_mandates_count < 2;
+    }
 }

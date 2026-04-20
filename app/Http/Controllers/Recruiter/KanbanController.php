@@ -58,7 +58,7 @@ class KanbanController extends Controller
             'stats'       => [
                 'total'       => $submissions->count(),
                 'top_score'   => $submissions->max('ai_score') ?? 0,
-                'days_active' => $claim->assigned_at ? now()->diffInDays($claim->assigned_at) : 0,
+                'days_active' => $claim->assigned_at ? (int) now()->diffInDays($claim->assigned_at, true) : 0,
                 'submitted'   => $submissions->whereIn('admin_review_status', ['approved', 'bypassed'])->count(),
             ],
         ]);
