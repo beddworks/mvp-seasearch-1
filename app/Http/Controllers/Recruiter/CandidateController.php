@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Recruiter;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ParseCvJob;
 use App\Models\Candidate;
 use App\Models\Mandate;
 use Illuminate\Http\Request;
@@ -125,12 +126,10 @@ class CandidateController extends Controller
 
         $this->handleCvUpload($request, $candidate, $recruiter);
 
-        // TODO Phase 6: dispatch ParseCvJob if mandate_id provided
-        // if ($request->mandate_id) {
-        //     ParseCvJob::dispatch($candidate, $request->mandate_id)->onQueue('ai');
-        // }
+        // Dispatch AI parsing job
+        ParseCvJob::dispatch($candidate, $request->input('mandate_id'))->onQueue('ai');
 
-        return redirect()->back()->with('success', 'CV uploaded successfully.');
+        return redirect()->back()->with('success', 'CV uploaded. AI parsing queued.');
     }
 
     // ─── Private helpers ─────────────────────────────────────────────────────

@@ -3,6 +3,18 @@ import { Link, useForm, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { fmtDate } from '@/lib/utils'
 
+async function callAi(url, body = {}) {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    })
+    return res.json()
+}
+
 const STAGE_COLORS = {
     pending:   'var(--mist4)',
     sourced:   'var(--mist4)',
@@ -14,14 +26,31 @@ const STAGE_COLORS = {
     on_hold:   'var(--ink4)',
 }
 
-export default function MandateWorkspace({ mandate, claim, submissions, candidates, daysSince, timerADeadline, timerAOverdue }) {
+export default function MandateWorkspace({ mandate, claim, submissions: initialSubmissions, candidates, daysSince, timerADeadline, timerAOverdue }) {
     const [showSubmitModal, setShowSubmitModal] = useState(false)
+    const [submissions, setSubmissions] = useState(initialSubmissions)
+    const [runningAi, setRunningAi] = useState(false)
 
     const { data, setData, post, processing, errors, reset } = useForm({
         mandate_id:    mandate.id,
         candidate_id:  '',
         recruiter_note: '',
     })
+
+    async function runAiMatching() {
+        setRunningAi(true)
+        try {
+            const data = await callAi(route('recruiter.ai.matching', mandate.id))
+            if (data.results) {
+                setSubmissions(prev => prev.map(s => {
+                    const r = data.results.find(x => x.id === s.id)
+                    return r ? { ...s, ai_score: r.score } : s
+                }))
+            }
+        } finally {
+            setRunningAi(false)
+        }
+    }
 
     function submitCandidate(e) {
         e.preventDefault()
@@ -68,11 +97,19 @@ export default function MandateWorkspace({ mandate, claim, submissions, candidat
                     <div className="dcard" style={{ marginBottom: 14 }}>
                         <div className="dcard-head">
                             <span className="dcard-title">Submissions ({submissions.length}/3)</span>
-                            {submissions.length < 3 && availableCandidates.length > 0 && (
-                                <button className="dcard-ghost-btn" onClick={() => setShowSubmitModal(true)}>
-                                    + Submit candidate
-                                </button>
-                            )}
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                {submissions.length > 0 && (
+                                    <button className="btn btn-ghost btn-sm" onClick={runAiMatching} disabled={runningAi}
+                                        style={{ color: 'var(--violet2)' }}>
+                                        {runningAi ? '✦ Scoring…' : '✦ AI match'}
+                                    </button>
+                                )}
+                                {submissions.length < 3 && availableCandidates.length > 0 && (
+                                    <button className="dcard-ghost-btn" onClick={() => setShowSubmitModal(true)}>
+                                        + Submit candidate
+                                    </button>
+                                )}
+                            </div>
                         </div>
                         {submissions.length === 0 ? (
                             <div style={{ padding: 24, textAlign: 'center' }}>

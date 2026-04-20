@@ -68,6 +68,12 @@ Route::middleware(['auth', 'role:recruiter', 'profile'])
         Route::get('/notifications', [\App\Http\Controllers\Recruiter\NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/{id}/read', [\App\Http\Controllers\Recruiter\NotificationController::class, 'read'])->name('notifications.read');
         Route::post('/notifications/read-all', [\App\Http\Controllers\Recruiter\NotificationController::class, 'readAll'])->name('notifications.read-all');
+
+        // AI endpoints
+        Route::post('/ai/generate-brief/{submission}',      [\App\Http\Controllers\Recruiter\AiController::class, 'generateBrief'])->name('ai.brief');
+        Route::post('/ai/draft-outreach/{candidate}',       [\App\Http\Controllers\Recruiter\AiController::class, 'draftOutreach'])->name('ai.outreach');
+        Route::post('/ai/interview-questions/{submission}', [\App\Http\Controllers\Recruiter\AiController::class, 'interviewQuestions'])->name('ai.questions');
+        Route::post('/ai/run-matching/{mandate}',           [\App\Http\Controllers\Recruiter\AiController::class, 'runMatching'])->name('ai.matching');
     });
 
 // ─── Admin ───────────────────────────────────────────────────

@@ -13,7 +13,11 @@ class Candidate extends Model
     protected $fillable = [
         'recruiter_id', 'first_name', 'last_name', 'email', 'phone',
         'linkedin_url', 'current_role', 'current_company', 'location',
-        'years_experience', 'cv_url', 'cv_original_name', 'cv_uploaded_at',
+        'years_experience', 'current_salary', 'expected_salary', 'salary_currency',
+        'nationality', 'recruiter_notes',
+        // CV
+        'cv_url', 'cv_original_name', 'cv_uploaded_at',
+        'cv_file_path', 'cv_file_name', 'cv_parsed',
         'cv_parsed_at', 'parsed_profile', 'skills', 'notes',
     ];
 
@@ -22,6 +26,7 @@ class Candidate extends Model
         'skills'         => 'array',
         'cv_uploaded_at' => 'datetime',
         'cv_parsed_at'   => 'datetime',
+        'cv_parsed'      => 'boolean',
     ];
 
     public function recruiter()

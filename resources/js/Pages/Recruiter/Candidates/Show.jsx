@@ -3,13 +3,166 @@ import { useForm, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { fmtDate, initials } from '@/lib/utils'
 
-const TABS = ['Profile', 'CV', 'Submissions', 'Notes']
+const TABS = ['Profile', 'CV', 'AI Insights', 'Submissions', 'Notes']
 
 const STAGE_COLORS = {
     pending:   'var(--mist4)',
     approved:  'var(--jade2)',
     rejected:  'var(--ruby2)',
     bypassed:  'var(--violet2)',
+}
+
+function ScoreRing({ score }) {
+    const r = 28, c = 2 * Math.PI * r
+    const pct = Math.max(0, Math.min(100, score ?? 0))
+    const dash = (pct / 100) * c
+    const color = pct >= 75 ? 'var(--jade2)' : pct >= 50 ? 'var(--amber2)' : 'var(--ruby2)'
+
+    return (
+        <svg width={70} height={70} style={{ transform: 'rotate(-90deg)' }}>
+            <circle cx={35} cy={35} r={r} fill="none" stroke="var(--mist3)" strokeWidth={6} />
+            <circle cx={35} cy={35} r={r} fill="none" stroke={color} strokeWidth={6}
+                strokeDasharray={`${dash} ${c}`} strokeLinecap="round" />
+            <text x={35} y={35} textAnchor="middle" dominantBaseline="central"
+                style={{ fill: color, fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, transform: 'rotate(90deg)', transformOrigin: '35px 35px' }}>
+                {pct}
+            </text>
+        </svg>
+    )
+}
+
+function AiInsightsPanel({ candidate }) {
+    const [outreachModal, setOutreachModal] = useState(false)
+    const [outreach, setOutreach] = useState(null)
+    const [loadingOutreach, setLoadingOutreach] = useState(false)
+    const [mandateId, setMandateId] = useState('')
+
+    const parsed = candidate?.parsed_profile ?? null
+    const skills = candidate?.skills ?? []
+
+    async function generateOutreach() {
+        if (!mandateId) return
+        setLoadingOutreach(true)
+        try {
+            const res = await fetch(route('recruiter.ai.outreach', candidate.id), {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ mandate_id: mandateId }),
+            })
+            const data = await res.json()
+            setOutreach(data)
+        } finally {
+            setLoadingOutreach(false)
+        }
+    }
+
+    return (
+        <div>
+            {/* CV parse status */}
+            {!candidate.cv_parsed && (
+                <div style={{ background: 'var(--violet-pale)', border: '1px solid var(--violet2)', borderRadius: 'var(--r)', padding: '12px 16px', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--violet2)' }}>✦ CV not yet AI-parsed</div>
+                        <div style={{ fontSize: 11, color: 'var(--ink4)', marginTop: 2 }}>Upload a CV to enable AI parsing, scoring and outreach.</div>
+                    </div>
+                </div>
+            )}
+
+            {/* Parsed summary */}
+            {parsed && (
+                <div className="g21" style={{ alignItems: 'start', marginBottom: 14 }}>
+                    <div className="dcard">
+                        <div className="dcard-head"><span className="dcard-title">✦ AI parsed profile</span></div>
+                        <div style={{ padding: 16 }}>
+                            {/* Skills */}
+                            {skills.length > 0 && (
+                                <div style={{ marginBottom: 14 }}>
+                                    <div style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)', textTransform: 'uppercase', marginBottom: 6 }}>Key skills</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                        {skills.map((s, i) => (
+                                            <span key={i} style={{ background: 'var(--sea-pale)', border: '1px solid var(--sea-soft)', borderRadius: 'var(--rxs)', padding: '3px 8px', fontSize: 11, color: 'var(--sea)' }}>{s}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Work history */}
+                            {parsed.work_history?.length > 0 && (
+                                <div style={{ marginBottom: 14 }}>
+                                    <div style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)', textTransform: 'uppercase', marginBottom: 6 }}>Work history</div>
+                                    {parsed.work_history.map((w, i) => (
+                                        <div key={i} style={{ marginBottom: 8 }}>
+                                            <div style={{ fontSize: 12, fontWeight: 600 }}>{w.title} @ {w.company}</div>
+                                            <div style={{ fontSize: 11, color: 'var(--ink4)' }}>{w.dates}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Education */}
+                            {parsed.education?.length > 0 && (
+                                <div>
+                                    <div style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)', textTransform: 'uppercase', marginBottom: 6 }}>Education</div>
+                                    {parsed.education.map((e, i) => (
+                                        <div key={i} style={{ fontSize: 12, marginBottom: 4 }}>{e.degree} — {e.institution} {e.year && `(${e.year})`}</div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Quick stats */}
+                    <div>
+                        <div className="dcard" style={{ marginBottom: 14 }}>
+                            <div className="dcard-head"><span className="dcard-title">Parsed data</span></div>
+                            <div style={{ padding: 14 }}>
+                                {[
+                                    ['Seniority', parsed.seniority_level?.replace('_', ' ')],
+                                    ['Experience', candidate.years_experience ? `${candidate.years_experience} yrs` : null],
+                                    ['Skills', `${skills.length} identified`],
+                                ].filter(([,v]) => v).map(([k, v]) => (
+                                    <div key={k} style={{ display: 'flex', gap: 8, marginBottom: 8, fontSize: 12 }}>
+                                        <span style={{ color: 'var(--ink4)', width: 80 }}>{k}</span>
+                                        <span style={{ fontWeight: 500 }}>{v}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Outreach generator */}
+            <div className="dcard">
+                <div className="dcard-head">
+                    <span className="dcard-title">✦ Draft outreach email</span>
+                </div>
+                <div style={{ padding: 16 }}>
+                    <p style={{ fontSize: 12, color: 'var(--ink4)', marginBottom: 12 }}>
+                        Generate a personalised cold outreach email for a specific role. Requires a mandate ID.
+                    </p>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                        <input className="form-input" style={{ flex: 1 }} placeholder="Mandate ID (UUID)" value={mandateId} onChange={e => setMandateId(e.target.value)} />
+                        <button className="btn btn-secondary" onClick={generateOutreach} disabled={loadingOutreach || !mandateId}>
+                            {loadingOutreach ? 'Generating…' : '✦ Generate'}
+                        </button>
+                    </div>
+                    {outreach && (
+                        <div style={{ background: 'var(--mist3)', border: '1px solid var(--wire)', borderRadius: 'var(--r)', padding: 14 }}>
+                            <div style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)', marginBottom: 4 }}>SUBJECT</div>
+                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>{outreach.subject}</div>
+                            <div style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)', marginBottom: 4 }}>BODY</div>
+                            <pre style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--ink)', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 0 }}>{outreach.body}</pre>
+                            <button className="btn btn-ghost btn-sm" style={{ marginTop: 10 }} onClick={() => { navigator.clipboard.writeText(`Subject: ${outreach.subject}\n\n${outreach.body}`) }}>Copy</button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    )
 }
 
 export default function CandidateShow({ candidate }) {
@@ -173,6 +326,11 @@ export default function CandidateShow({ candidate }) {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {/* AI Insights tab */}
+            {tab === 'AI Insights' && (
+                <AiInsightsPanel candidate={candidate} />
             )}
 
             {/* Submissions tab */}
