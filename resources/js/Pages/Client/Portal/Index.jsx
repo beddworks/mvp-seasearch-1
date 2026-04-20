@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { router, useForm } from '@inertiajs/react'
 import ClientLayout from '@/Components/layout/ClientLayout'
 import { initials, fmtDate, fmtRelative } from '@/lib/utils'
+import PipelineBoard from '@/Components/PipelineBoard'
 
 export default function ClientPortalIndex({ client, screen: initialScreen, stats, mandates, submissions, notifications }) {
     const [screen, setScreen]         = useState(initialScreen)
@@ -311,6 +312,19 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
         </div>
     )
 
+    // ── Pipeline Screen ──────────────────────────────────────────────────
+    const PipelineScreen = () => (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px 20px', overflow: 'hidden' }}>
+            <div style={{ marginBottom: 14, flexShrink: 0 }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 20, color: 'var(--ink)', marginBottom: 2 }}>Candidate Pipeline</div>
+                <div style={{ fontSize: 12, color: 'var(--ink4)' }}>Track your candidates across hiring stages.</div>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+                <PipelineBoard submissions={submissions} />
+            </div>
+        </div>
+    )
+
     // ── Screen router ────────────────────────────────────────────────────
     const screens = {
         dashboard:     DashboardScreen,
@@ -319,6 +333,7 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
         feedback:      FeedbackScreen,
         messages:      MessagesScreen,
         notifications: NotificationsScreen,
+        pipeline:      PipelineScreen,
     }
     const ActiveScreen = screens[screen] ?? DashboardScreen
 

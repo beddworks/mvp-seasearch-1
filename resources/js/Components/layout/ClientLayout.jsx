@@ -24,6 +24,7 @@ export default function ClientLayout({ client, children, activeScreen = 'dashboa
                     {[
                         ['dashboard', 'Dashboard'],
                         ['submissions', 'Submissions'],
+                        ['pipeline', 'Pipeline'],
                         ['compare', 'Compare'],
                         ['feedback', 'Interview Feedback'],
                         ['messages', 'Messages'],

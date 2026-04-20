@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, useForm, router } from '@inertiajs/react'
 import { fmtDate, fmtCurrency } from '@/lib/utils'
+import PipelineBoard from '@/Components/PipelineBoard'
 
 const STATUS_BADGE = {
     draft: 'badge badge-amber', active: 'badge badge-jade', paused: 'badge badge-sea',
@@ -8,6 +10,7 @@ const STATUS_BADGE = {
 }
 
 export default function MandateShow({ mandate, clients, compensationTypes, recruiters }) {
+    const [tab, setTab] = useState('details')
     const { data, setData, put, processing, errors } = useForm({
         client_id:            mandate.client_id,
         compensation_type_id: mandate.compensation_type_id ?? '',
@@ -63,6 +66,33 @@ export default function MandateShow({ mandate, clients, compensationTypes, recru
                 </div>
             </div>
 
+            {/* Tab bar */}
+            <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--wire)', marginBottom: 18 }}>
+                {[['details', 'Details'], ['pipeline', `Pipeline (${mandate.submissions?.length ?? 0})`]].map(([id, label]) => (
+                    <button
+                        key={id}
+                        onClick={() => setTab(id)}
+                        style={{
+                            padding: '8px 16px', fontSize: 13, fontWeight: tab === id ? 600 : 400,
+                            color: tab === id ? 'var(--sea)' : 'var(--ink4)',
+                            background: 'none', border: 'none', borderBottom: tab === id ? '2px solid var(--sea)' : '2px solid transparent',
+                            cursor: 'pointer', marginBottom: -1, transition: 'all .15s',
+                        }}
+                    >
+                        {label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Pipeline tab */}
+            {tab === 'pipeline' && (
+                <div style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}>
+                    <PipelineBoard submissions={mandate.submissions ?? []} />
+                </div>
+            )}
+
+            {/* Details tab */}
+            {tab === 'details' && (
             <div className="g21" style={{ alignItems: 'start' }}>
                 {/* Edit form */}
                 <form onSubmit={e => { e.preventDefault(); put(route('admin.mandates.update', mandate.id)) }}>
@@ -200,6 +230,7 @@ export default function MandateShow({ mandate, clients, compensationTypes, recru
                     </div>
                 </div>
             </div>
+            )} {/* end details tab */}
         </AdminLayout>
     )
 }
