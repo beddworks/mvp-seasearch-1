@@ -1,10 +1,10 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, router } from '@inertiajs/react'
-import { fmtCurrency, fmtDate } from '@/lib/utils'
+import { fmtCurrency, fmtDate, fmtRelative } from '@/lib/utils'
 
-export default function AdminDashboard({ stats, pendingClaims = [], pendingSubmissions = [], unclaimedRoles = [] }) {
+export default function AdminDashboard({ stats, pendingClaims = [], pendingSubmissions = [], unclaimedRoles = [], recentActivity = [] }) {
     const statCards = [
-        { label: 'Active mandates',    value: stats.active_mandates,     accent: 'var(--sea3)' },
+        { label: 'Active mandates',    value: stats.active_mandates,      accent: 'var(--sea3)' },
         { label: 'Pending claims',     value: stats.pending_claims,       accent: 'var(--amber2)' },
         { label: 'Pending CDD review', value: stats.pending_cdd_reviews,  accent: 'var(--violet2)' },
         { label: 'Unclaimed 24h+',     value: stats.unclaimed_24h,        accent: 'var(--ruby2)' },
@@ -12,6 +12,8 @@ export default function AdminDashboard({ stats, pendingClaims = [], pendingSubmi
         { label: 'Active recruiters',  value: stats.active_recruiters,    accent: 'var(--jade2)' },
         { label: 'Placements MTD',     value: stats.placements_mtd,       accent: 'var(--sea2)' },
         { label: 'Revenue MTD',        value: fmtCurrency(stats.revenue_mtd ?? 0, 'SGD'), accent: 'var(--gold2)' },
+        { label: 'Placements YTD',     value: stats.placements_ytd,       accent: 'var(--jade2)' },
+        { label: 'Revenue YTD',        value: fmtCurrency(stats.revenue_ytd ?? 0, 'SGD'), accent: 'var(--jade3)' },
     ]
 
     return (
@@ -21,7 +23,7 @@ export default function AdminDashboard({ stats, pendingClaims = [], pendingSubmi
             </h1>
 
             {/* Stat grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 24 }}>
                 {statCards.map(c => (
                     <div className="sm" key={c.label}>
                         <div className="sm-bar" style={{ background: c.accent }} />
@@ -87,7 +89,7 @@ export default function AdminDashboard({ stats, pendingClaims = [], pendingSubmi
 
             {/* Unclaimed roles */}
             {unclaimedRoles.length > 0 && (
-                <div className="dcard">
+                <div className="dcard" style={{ marginBottom: 16 }}>
                     <div className="dcard-head">
                         <span className="dcard-title" style={{ color: 'var(--ruby2)' }}>⚠ Unclaimed roles (24h+)</span>
                         <Link href={route('admin.mandates.index')} className="dcard-ghost-btn">Manage</Link>
@@ -107,6 +109,32 @@ export default function AdminDashboard({ stats, pendingClaims = [], pendingSubmi
                             </tbody>
                         </table>
                     </div>
+                </div>
+            )}
+
+            {/* Recent activity */}
+            {recentActivity.length > 0 && (
+                <div className="dcard">
+                    <div className="dcard-head"><span className="dcard-title">Recent activity</span></div>
+                    {recentActivity.map(a => (
+                        <div key={a.id} style={{ padding: '10px 16px', borderBottom: '1px solid var(--wire)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontSize: 12, color: 'var(--ink)' }}>{a.title}</div>
+                            <div style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)', flexShrink: 0, marginLeft: 12 }}>{fmtRelative(a.created_at)}</div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Recent activity */}
+            {recentActivity.length > 0 && (
+                <div className="dcard" style={{ marginTop: 16 }}>
+                    <div className="dcard-head"><span className="dcard-title">Recent activity</span></div>
+                    {recentActivity.map(a => (
+                        <div key={a.id} style={{ padding: '10px 16px', borderBottom: '1px solid var(--wire)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontSize: 12, color: 'var(--ink)' }}>{a.title}</div>
+                            <div style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)', flexShrink: 0, marginLeft: 12 }}>{fmtRelative(a.created_at)}</div>
+                        </div>
+                    ))}
                 </div>
             )}
         </AdminLayout>
