@@ -23,8 +23,8 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
     // ── Dashboard Screen ─────────────────────────────────────────────────
     const DashboardScreen = () => (
         <div style={{ padding: '24px 28px' }}>
-            <div style={{ marginBottom: 20 }}>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: 22, color: 'var(--ink)', marginBottom: 3 }}>
+            <div style={{ marginBottom: 22 }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 26, color: 'var(--ink)', marginBottom: 3 }}>
                     Good morning, {client.contact_name?.split(' ')[0]}
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--ink4)' }}>Here's your hiring overview for {client.company_name}.</div>
@@ -36,7 +36,7 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
                     ['Total submissions',      stats.total_submissions,   accent],
                     ['Approved for interview', stats.approved_interviews, '#2E7D33'],
                     ['Active mandates',        stats.active_mandates,     accent],
-                    ['Avg days to respond',    stats.avg_brief_to_review, '#B85C1A'],
+                    ['Avg days to respond',    stats.avg_brief_to_review != null ? Math.round(stats.avg_brief_to_review * 10) / 10 : '—', '#B85C1A'],
                 ].map(([lbl, val, color]) => (
                     <div key={lbl} style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 'var(--r)', padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: color }} />
@@ -100,8 +100,11 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
     // ── Submissions Screen ───────────────────────────────────────────────
     const SubmissionsScreen = () => (
         <div style={{ padding: '24px 28px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: 20, color: 'var(--ink)' }}>Candidate Submissions</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+                <div>
+                    <div style={{ fontFamily: 'var(--serif)', fontSize: 22, color: 'var(--ink)', marginBottom: 2 }}>Candidate Submissions</div>
+                    <div style={{ fontSize: 12, color: 'var(--ink4)' }}>{client.company_name} · {submissions.length} candidate{submissions.length !== 1 ? 's' : ''} submitted</div>
+                </div>
                 <div style={{ display: 'flex', gap: 2 }}>
                     {[['all','All'],['pending','Pending review'],['approved','Approved'],['rejected','Rejected']].map(([val, lbl]) => {
                         const count = val === 'all' ? submissions.length
@@ -137,8 +140,8 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
         const compareSubs = submissions.filter(s => s.client_status !== 'rejected')
         return (
             <div style={{ padding: '24px 28px' }}>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: 20, marginBottom: 18 }}>Compare Candidates</div>
-                <div style={{ overflowX: 'auto' }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 22, marginBottom: 18, color: 'var(--ink)' }}>Compare Candidates</div>
+                <div style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 'var(--r)', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
                         <thead>
                             <tr style={{ background: 'var(--paper2)' }}>
@@ -498,7 +501,7 @@ function CandidateBriefCard({ sub, accent, onApprove, onReject, onInfo }) {
                         <div style={{ fontSize: 12, color: 'var(--ink4)', marginBottom: 6 }}>{sub.candidate.current_role} · {sub.candidate.current_company}</div>
 
                         {sub.ai_summary && (
-                            <div style={{ fontSize: 12, color: 'var(--ink4)', lineHeight: 1.7, marginBottom: 10 }}>{sub.ai_summary}</div>
+                            <div style={{ fontSize: 12, color: 'var(--ink4)', lineHeight: 1.7, marginBottom: 10, background: 'var(--paper2)', borderLeft: '2px solid #C4B8F0', padding: '9px 11px', borderRadius: '0 var(--rsm) var(--rsm) 0' }}>{sub.ai_summary}</div>
                         )}
 
                         {/* Breakdown bars */}
@@ -533,11 +536,11 @@ function CandidateBriefCard({ sub, accent, onApprove, onReject, onInfo }) {
                     {/* Score ring */}
                     {score != null && (
                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                            <div style={{ width: 52, height: 52, borderRadius: '50%', border: `2px solid ${scoreColor}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--mono)', color: scoreColor }}>{score}</div>
-                                <div style={{ fontSize: 8, color: 'var(--ink4)', textTransform: 'uppercase' }}>AI</div>
+                            <div style={{ width: 60, height: 60, borderRadius: '50%', border: `2.5px solid ${scoreColor}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginLeft: 'auto', marginBottom: 6 }}>
+                                <div style={{ fontSize: 17, fontWeight: 500, fontFamily: 'var(--mono)', lineHeight: 1, color: scoreColor }}>{score}</div>
+                                <div style={{ fontSize: 9, color: 'var(--ink4)', textTransform: 'uppercase', letterSpacing: '.04em' }}>score</div>
                             </div>
-                            <div style={{ fontSize: 10, color: 'var(--ink4)', marginTop: 3, fontFamily: 'var(--mono)' }}>{fmtRelative(sub.submitted_at)}</div>
+                            <div style={{ fontSize: 10, color: 'var(--ink4)', fontFamily: 'var(--mono)' }}>{fmtRelative(sub.submitted_at)}</div>
                         </div>
                     )}
                 </div>
@@ -545,10 +548,10 @@ function CandidateBriefCard({ sub, accent, onApprove, onReject, onInfo }) {
 
             {/* Action bar */}
             {isPending && (
-                <div style={{ padding: '12px 18px', borderTop: '1px solid var(--line)', display: 'flex', gap: 8 }}>
-                    <button onClick={onApprove} style={{ flex: 1, padding: 9, borderRadius: 'var(--rsm)', background: '#2E7D33', color: '#fff', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>✓ Approve for interview</button>
-                    <button onClick={onInfo}    style={{ padding: '9px 14px', borderRadius: 'var(--rsm)', background: 'transparent', border: '1px solid var(--line)', color: 'var(--ink4)', fontSize: 12, cursor: 'pointer' }}>Request info</button>
-                    <button onClick={onReject}  style={{ padding: '9px 14px', borderRadius: 'var(--rsm)', background: 'transparent', border: '1px solid var(--line)', color: 'var(--ruby2)', fontSize: 12, cursor: 'pointer' }}>Reject</button>
+                <div style={{ padding: '12px 18px', borderTop: '1px solid var(--line)', background: 'var(--paper2)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onApprove} style={{ flex: 1, minWidth: 120, padding: '9px 12px', borderRadius: 'var(--rsm)', background: '#2E7D33', color: '#fff', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>✓ Approve for interview</button>
+                    <button onClick={onInfo}    style={{ flex: 1, minWidth: 100, padding: '9px 12px', borderRadius: 'var(--rsm)', background: 'transparent', border: '1.5px solid #F5C49A', color: '#B85C1A', fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>? Request info</button>
+                    <button onClick={onReject}  style={{ flex: 1, minWidth: 100, padding: '9px 12px', borderRadius: 'var(--rsm)', background: 'transparent', border: '1.5px solid #F7C1C1', color: '#B52525', fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>✗ Reject</button>
                 </div>
             )}
             {isApproved && (
