@@ -41,6 +41,10 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'google_sheets' => [
+        'credentials_path' => env('GOOGLE_SHEETS_CREDENTIALS'),
+    ],
+
     'anthropic' => [
         'api_key' => env('ANTHROPIC_API_KEY'),
         'model'   => env('ANTHROPIC_MODEL', 'claude-sonnet-4-6'),

@@ -69,6 +69,34 @@ class NotificationService
         );
     }
 
+    public function clientFeedbackReceived(mixed $submission): void
+    {
+        $candidateName = $submission->candidate->first_name . ' ' . $submission->candidate->last_name;
+
+        // Notify recruiter
+        $this->notify(
+            $submission->recruiter->user_id,
+            'client_feedback_received',
+            "Client updated status for {$candidateName}: {$submission->client_status}",
+            ['submission_id' => $submission->id]
+        );
+
+        // Notify admins
+        $this->notifyAdmins(
+            'client_feedback_received',
+            "Client feedback: {$candidateName} → {$submission->client_status} (mandate: {$submission->mandate->title})",
+            ['submission_id' => $submission->id]
+        );
+    }
+
+    public function notifyAdmins(string $type, string $message, array $data = []): void
+    {
+        $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+        foreach ($admins as $admin) {
+            $this->notify($admin->id, $type, $message, $data);
+        }
+    }
+
     private function notify(string $userId, string $type, string $message, array $data = []): void
     {
         AppNotification::create([

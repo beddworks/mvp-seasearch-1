@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncGSheetJob;
 use App\Models\CddSubmission;
 use App\Services\NotificationService;
+use App\Services\TokenService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,6 +29,9 @@ class CddApprovalController extends Controller
     {
         $request->validate(['note' => 'nullable|string|max:500']);
 
+        // Generate / refresh the client feedback token
+        app(TokenService::class)->generate($submission);
+
         $submission->update([
             'admin_review_status'  => 'approved',
             'admin_reviewed_by'    => auth()->id(),
@@ -35,6 +40,9 @@ class CddApprovalController extends Controller
         ]);
 
         app(NotificationService::class)->cddApproved($submission);
+
+        // Sync to Google Sheet (add row for newly approved CDD)
+        SyncGSheetJob::dispatch($submission->fresh(), 'add_row')->onQueue('sheets');
 
         return redirect()->back()->with('success', 'CDD approved. Client will now see this candidate.');
     }

@@ -14,7 +14,9 @@ use App\Http\Controllers\Admin\TimerConfigController;
 use App\Http\Controllers\Auth\GoogleSsoController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ProfileController;
+use App\Http\Controllers\Client\SubmissionFeedbackController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // ─── Root ────────────────────────────────────────────────────
 Route::get('/', fn () => redirect()->route('login'));
@@ -146,4 +148,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
     });
 
-
+// ─── Tokenized Client Feedback (public — no auth) ────────────
+Route::get('/feedback/confirmed', fn () => Inertia::render('Client/Feedback/Confirmed'))->name('feedback.confirmed');
+Route::get('/feedback/{token}',   [SubmissionFeedbackController::class, 'show'])->name('feedback.show');
+Route::post('/feedback/{token}',  [SubmissionFeedbackController::class, 'update'])->name('feedback.update');

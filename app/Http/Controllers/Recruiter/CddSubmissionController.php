@@ -72,6 +72,7 @@ class CddSubmissionController extends Controller
             'submission_number'    => $submissionCount + 1,
             'submitted_at'         => now(),
             'token'                => Str::uuid(),
+            'token_created_at'     => now(),
         ]);
 
         // Notify admins (unless bypassed)
