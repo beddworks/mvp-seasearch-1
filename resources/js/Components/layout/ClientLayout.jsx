@@ -82,13 +82,21 @@ export default function ClientLayout({ client, children, activeScreen = 'dashboa
                     {/* User strip */}
                     <div style={{ padding: 12, borderTop: '1px solid var(--line)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 8, background: 'var(--paper2)', borderRadius: 'var(--rsm)', border: '1px solid var(--line)' }}>
-                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 500 }}>
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 500, flexShrink: 0 }}>
                                 {initials(client?.contact_name ?? '')}
                             </div>
-                            <div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--ink)' }}>{client?.contact_name}</div>
                                 <div style={{ fontSize: 10, color: 'var(--ink4)' }}>{client?.contact_title}</div>
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => router.post(route('logout'))}
+                                style={{ background: 'none', border: 'none', color: 'var(--ink4)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--mono)', flexShrink: 0, padding: '2px 4px' }}
+                                title="Sign out"
+                            >
+                                Sign out
+                            </button>
                         </div>
                     </div>
                 </div>
