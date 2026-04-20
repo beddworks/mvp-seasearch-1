@@ -70,7 +70,7 @@ export default function Login() {
                 {/* Divider */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                     <div style={{ flex: 1, height: 1, background: 'var(--wire)' }} />
-                    <span style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)' }}>Admin email login</span>
+                    <span style={{ fontSize: 11, color: 'var(--ink4)', fontFamily: 'var(--mono)' }}>or email login</span>
                     <div style={{ flex: 1, height: 1, background: 'var(--wire)' }} />
                 </div>
 

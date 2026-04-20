@@ -29,15 +29,14 @@ class LoginController extends Controller
 
         $user = Auth::user();
 
-        // Only admins may use email/password login
-        if (!in_array($user->role, ['admin', 'super_admin'])) {
-            Auth::logout();
-            return back()->withErrors(['email' => 'Please use Google Sign-In to access your account.']);
-        }
-
         $request->session()->regenerate();
 
-        return redirect()->route('admin.dashboard');
+        return match ($user->role) {
+            'admin', 'super_admin' => redirect()->route('admin.dashboard'),
+            'recruiter'           => redirect()->route('recruiter.dashboard'),
+            'client'              => redirect()->route('client.portal.index'),
+            default               => redirect('/'),
+        };
     }
 
     public function destroy(Request $request): RedirectResponse
