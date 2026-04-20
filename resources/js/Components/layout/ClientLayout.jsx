@@ -33,8 +33,9 @@ export default function ClientLayout({ client, children, activeScreen = 'dashboa
                             onClick={() => router.visit(route('client.portal.index', { screen: id }))}
                             style={{
                                 fontSize: 12, padding: '5px 10px', borderRadius: 'var(--rsm)', cursor: 'pointer',
-                                color: activeScreen === id ? '#fff' : 'rgba(255,255,255,.5)',
-                                background: activeScreen === id ? 'rgba(255,255,255,.1)' : 'transparent',
+                                color: activeScreen === id ? '#fff' : 'rgba(255,255,255,.8)',
+                                background: activeScreen === id ? 'rgba(255,255,255,.15)' : 'transparent',
+                                fontWeight: activeScreen === id ? 500 : 400,
                             }}>
                             {label}
                         </div>
@@ -54,9 +55,9 @@ export default function ClientLayout({ client, children, activeScreen = 'dashboa
                 {/* Sidebar */}
                 <div style={{ width: 220, background: 'var(--paper)', borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
                     {/* Active mandate card */}
-                    <div style={{ margin: '14px 12px', background: `${accent}15`, border: `1px solid ${accent}40`, borderRadius: 'var(--r)', padding: 12 }}>
-                        <div style={{ fontSize: 9, color: accent, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 3 }}>Active mandate</div>
-                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink)' }}>{client?.active_mandate_title ?? 'No active role'}</div>
+                    <div style={{ margin: '14px 12px', background: `${accent}12`, border: `1.5px solid ${accent}55`, borderRadius: 'var(--r)', padding: 12 }}>
+                        <div style={{ fontSize: 9, color: accent, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 4, fontWeight: 600 }}>Active mandate</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.3 }}>{client?.active_mandate_title ?? 'No active role'}</div>
                     </div>
 
                     {/* Nav items */}
@@ -72,7 +73,9 @@ export default function ClientLayout({ client, children, activeScreen = 'dashboa
                             <div key={id}
                                 onClick={() => router.visit(route('client.portal.index', { screen: id }))}
                                 className={`sbi${activeScreen === id ? ' on' : ''}`}
-                                style={activeScreen === id ? { background: `${accent}15`, color: 'var(--ink)' } : {}}>
+                                style={activeScreen === id
+                                    ? { background: `${accent}20`, color: 'var(--ink)', fontWeight: 500, border: `1px solid ${accent}35`, borderRadius: 'var(--rsm)' }
+                                    : { color: 'var(--ink3)' }}>
                                 <span className="sbi-i">{ico}</span>
                                 <span className="sbi-l">{lbl}</span>
                             </div>

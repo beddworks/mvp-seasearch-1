@@ -24,10 +24,10 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
     const DashboardScreen = () => (
         <div style={{ padding: '24px 28px' }}>
             <div style={{ marginBottom: 22 }}>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: 26, color: 'var(--ink)', marginBottom: 3 }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 26, color: 'var(--ink)', marginBottom: 4, fontWeight: 400 }}>
                     Good morning, {client.contact_name?.split(' ')[0]}
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--ink4)' }}>Here's your hiring overview for {client.company_name}.</div>
+                <div style={{ fontSize: 13, color: 'var(--ink3)' }}>Here's your hiring overview for {client.company_name}.</div>
             </div>
 
             {/* Stat cards */}
@@ -40,8 +40,8 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
                 ].map(([lbl, val, color]) => (
                     <div key={lbl} style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 'var(--r)', padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: color }} />
-                        <div style={{ fontSize: 26, fontWeight: 500, color: 'var(--ink)', fontFamily: 'var(--mono)', lineHeight: 1, marginBottom: 3 }}>{val}</div>
-                        <div style={{ fontSize: 11, color: 'var(--ink4)' }}>{lbl}</div>
+                        <div style={{ fontSize: 28, fontWeight: 600, color: 'var(--ink)', fontFamily: 'var(--mono)', lineHeight: 1, marginBottom: 5 }}>{val}</div>
+                        <div style={{ fontSize: 12, color: 'var(--ink3)', fontWeight: 400 }}>{lbl}</div>
                     </div>
                 ))}
             </div>
@@ -49,7 +49,7 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
             {/* Active mandates table */}
             <div style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 'var(--r)', overflow: 'hidden', marginBottom: 18 }}>
                 <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: 13, fontWeight: 500 }}>Active Mandates</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Active Mandates</div>
                     <button onClick={() => setScreen('submissions')} style={{ fontSize: 11, padding: '5px 12px', borderRadius: 20, border: '1px solid var(--line)', background: 'transparent', color: 'var(--ink4)', cursor: 'pointer', fontFamily: 'var(--font)' }}>
                         View all submissions →
                     </button>
@@ -58,7 +58,7 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
                     <thead>
                         <tr style={{ background: 'var(--paper2)' }}>
                             {['Role','Recruiter','Submissions','Pipeline','Status',''].map(h => (
-                                <th key={h} style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em', color: 'var(--ink4)', padding: '9px 14px', textAlign: 'left' }}>{h}</th>
+                                <th key={h} style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--ink3)', padding: '9px 14px', textAlign: 'left' }}>{h}</th>
                             ))}
                         </tr>
                     </thead>
@@ -67,9 +67,9 @@ export default function ClientPortalIndex({ client, screen: initialScreen, stats
                             const subCount = submissions.filter(s => s.mandate_id === m.id).length
                             return (
                                 <tr key={m.id} style={{ borderTop: '1px solid var(--line)' }}>
-                                    <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 500 }}>{m.title}</td>
-                                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--ink4)' }}>{m.activeClaim?.recruiter?.display_name ?? '—'}</td>
-                                    <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', fontSize: 13 }}>{subCount}</td>
+                                    <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>{m.title}</td>
+                                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--ink3)' }}>{m.activeClaim?.recruiter?.display_name ?? '—'}</td>
+                                    <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 500, color: 'var(--ink)' }}>{subCount}</td>
                                     <td style={{ padding: '10px 14px' }}>
                                         <div style={{ display: 'flex', gap: 2 }}>
                                             {Array.from({ length: 5 }).map((_, i) => (
