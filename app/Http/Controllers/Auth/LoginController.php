@@ -31,6 +31,14 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        // Debug: log session ID and user after login
+        \Log::info('Login success', [
+            'user_id'    => $user->id,
+            'role'       => $user->role,
+            'session_id' => session()->getId(),
+            'session_driver' => config('session.driver'),
+        ]);
+
         return match ($user->role) {
             'admin', 'super_admin' => redirect()->route('admin.dashboard'),
             'recruiter'           => redirect()->route('recruiter.dashboard'),

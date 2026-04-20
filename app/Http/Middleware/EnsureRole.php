@@ -12,6 +12,14 @@ class EnsureRole
     {
         $user = $request->user();
 
+        \Log::info('EnsureRole check', [
+            'user'       => $user?->id,
+            'user_role'  => $user?->role,
+            'required'   => $roles,
+            'session_id' => session()->getId(),
+            'authed'     => (bool) $user,
+        ]);
+
         if (!$user || !in_array($user->role, $roles)) {
             if ($request->expectsJson()) {
                 abort(403, 'Unauthorized.');
