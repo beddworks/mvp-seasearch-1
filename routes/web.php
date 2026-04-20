@@ -43,6 +43,31 @@ Route::middleware(['auth', 'role:recruiter', 'profile'])
     ->name('recruiter.')
     ->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Recruiter\DashboardController::class, 'index'])->name('dashboard');
+
+        // Mandates (job board)
+        Route::get('/mandates', [\App\Http\Controllers\Recruiter\MandateController::class, 'index'])->name('mandates.index');
+        Route::get('/mandates/{mandate}', [\App\Http\Controllers\Recruiter\MandateController::class, 'show'])->name('mandates.show');
+        Route::post('/mandates/{mandate}/pick', [\App\Http\Controllers\Recruiter\MandateController::class, 'pick'])->name('mandates.pick');
+        Route::get('/mandates/{mandate}/workspace', [\App\Http\Controllers\Recruiter\MandateController::class, 'workspace'])->name('mandates.workspace');
+
+        // Candidates
+        Route::get('/candidates', [\App\Http\Controllers\Recruiter\CandidateController::class, 'index'])->name('candidates.index');
+        Route::get('/candidates/{candidate}', [\App\Http\Controllers\Recruiter\CandidateController::class, 'show'])->name('candidates.show');
+        Route::post('/candidates', [\App\Http\Controllers\Recruiter\CandidateController::class, 'store'])->name('candidates.store');
+        Route::put('/candidates/{candidate}', [\App\Http\Controllers\Recruiter\CandidateController::class, 'update'])->name('candidates.update');
+        Route::post('/candidates/{candidate}/upload-cv', [\App\Http\Controllers\Recruiter\CandidateController::class, 'uploadCv'])->name('candidates.upload-cv');
+
+        // CDD Submissions
+        Route::post('/submissions', [\App\Http\Controllers\Recruiter\CddSubmissionController::class, 'store'])->name('submissions.store');
+        Route::put('/submissions/{submission}', [\App\Http\Controllers\Recruiter\CddSubmissionController::class, 'update'])->name('submissions.update');
+
+        // Earnings
+        Route::get('/earnings', [\App\Http\Controllers\Recruiter\EarningsController::class, 'index'])->name('earnings.index');
+
+        // Notifications
+        Route::get('/notifications', [\App\Http\Controllers\Recruiter\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/{id}/read', [\App\Http\Controllers\Recruiter\NotificationController::class, 'read'])->name('notifications.read');
+        Route::post('/notifications/read-all', [\App\Http\Controllers\Recruiter\NotificationController::class, 'readAll'])->name('notifications.read-all');
     });
 
 // ─── Admin ───────────────────────────────────────────────────
